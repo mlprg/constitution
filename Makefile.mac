@@ -1,0 +1,52 @@
+TEX       := tectonic
+OUTDIR    := build
+CONST_TEX := constitution.tex
+CONST_PDF := $(OUTDIR)/constitution.pdf
+BYLAW_TEX := bylaws.tex
+BYLAW_PDF := $(OUTDIR)/bylaws.pdf
+
+TEX_SOURCES := $(CONST_TEX) $(BYLAW_TEX)
+
+.PHONY: all constitution bylaws open open-bylaws clean watch help
+
+help:
+	@echo "Targets:"
+	@echo "  make constitution   Build constitution PDF ($(CONST_PDF))"
+	@echo "  make bylaws         Build bylaws PDF ($(BYLAW_PDF))"
+	@echo "  make all            Build constitution + bylaws"
+	@echo "  make open           Build and open the constitution PDF"
+	@echo "  make open-bylaws    Build and open the bylaws PDF"
+	@echo "  make watch          Rebuild on file changes (requires fswatch)"
+	@echo "  make clean          Remove build output"
+
+all: constitution bylaws
+
+constitution: $(CONST_PDF)
+bylaws: $(BYLAW_PDF)
+
+$(CONST_PDF): $(CONST_TEX)
+	@mkdir -p $(OUTDIR)
+	$(TEX) -X compile $(CONST_TEX) --outdir $(OUTDIR)
+
+$(BYLAW_PDF): $(BYLAW_TEX)
+	@mkdir -p $(OUTDIR)
+	$(TEX) -X compile $(BYLAW_TEX) --outdir $(OUTDIR)
+
+open: constitution
+	open $(CONST_PDF)
+
+open-bylaws: bylaws
+	open $(BYLAW_PDF)
+
+watch:
+	@command -v fswatch >/dev/null 2>&1 || { \
+		echo "fswatch not found. Install with: brew install fswatch"; \
+		exit 1; \
+	}
+	@echo "Watching .tex files for changes..."
+	fswatch -o \
+		$(CONST_TEX) $(BYLAW_TEX) | \
+		xargs -n1 -I{} make all
+
+clean:
+	rm -rf $(OUTDIR)

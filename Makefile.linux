@@ -1,0 +1,60 @@
+OUTDIR    := build
+CONST_TEX := constitution.tex
+CONST_PDF := $(OUTDIR)/constitution.pdf
+BYLAW_TEX := bylaws.tex
+BYLAW_PDF := $(OUTDIR)/bylaws.pdf
+LATEXMK   := latexmk
+LATEXOPTS := -pdf -interaction=nonstopmode -file-line-error -synctex=1 -outdir=$(OUTDIR)
+
+TEX_SOURCES := $(CONST_TEX) $(BYLAW_TEX)
+
+.PHONY: all constitution bylaws open open-bylaws clean watch watch-bylaws help rebuild
+
+help:
+	@echo "Targets:"
+	@echo "  make constitution   Build $(CONST_PDF)"
+	@echo "  make bylaws         Build $(BYLAW_PDF)"
+	@echo "  make all            Build constitution + bylaws"
+	@echo "  make open           Build and open the constitution PDF"
+	@echo "  make open-bylaws    Build and open the bylaws PDF"
+	@echo "  make watch          Continuous rebuild for constitution.tex"
+	@echo "  make watch-bylaws   Continuous rebuild for bylaws.tex"
+	@echo "  make clean          Remove build output"
+	@echo "  make rebuild        Full rebuild from scratch"
+
+all: constitution bylaws
+
+constitution: $(CONST_PDF)
+bylaws: $(BYLAW_PDF)
+
+$(CONST_PDF): $(CONST_TEX)
+	@mkdir -p $(OUTDIR)
+	$(LATEXMK) $(LATEXOPTS) $(CONST_TEX)
+
+$(BYLAW_PDF): $(BYLAW_TEX)
+	@mkdir -p $(OUTDIR)
+	$(LATEXMK) $(LATEXOPTS) $(BYLAW_TEX)
+
+open: constitution
+	xdg-open $(CONST_PDF) >/dev/null 2>&1 &
+
+open-bylaws: bylaws
+	xdg-open $(BYLAW_PDF) >/dev/null 2>&1 &
+
+watch:
+	@mkdir -p $(OUTDIR)
+	$(LATEXMK) -pvc $(LATEXOPTS) $(CONST_TEX)
+
+watch-bylaws:
+	@mkdir -p $(OUTDIR)
+	$(LATEXMK) -pvc $(LATEXOPTS) $(BYLAW_TEX)
+
+clean:
+	$(LATEXMK) -C -outdir=$(OUTDIR)
+	rm -rf $(OUTDIR)
+
+rebuild:
+	rm -rf $(OUTDIR)
+	mkdir -p $(OUTDIR)
+	$(LATEXMK) $(LATEXOPTS) -g $(CONST_TEX)
+	$(LATEXMK) $(LATEXOPTS) -g $(BYLAW_TEX)

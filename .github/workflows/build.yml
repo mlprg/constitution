@@ -1,0 +1,34 @@
+name: Build documents
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Tectonic
+        uses: wtfjoke/setup-tectonic@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build constitution
+        run: tectonic -X compile constitution.tex --outdir build
+
+      - name: Build bylaws
+        run: tectonic -X compile bylaws.tex --outdir build
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: documents
+          path: build/*.pdf
+          if-no-files-found: error
