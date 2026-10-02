@@ -1,0 +1,48 @@
+# Recipes use cmd.exe syntax; run with a native GNU make (make or mingw32-make).
+SHELL     := cmd.exe
+TEX       := tectonic
+OUTDIR    := build
+CONST_TEX := constitution.tex
+CONST_PDF := $(OUTDIR)/constitution.pdf
+BYLAW_TEX := bylaws.tex
+BYLAW_PDF := $(OUTDIR)/bylaws.pdf
+
+TEX_SOURCES := $(CONST_TEX) $(BYLAW_TEX)
+
+.PHONY: all constitution bylaws open open-bylaws clean watch help
+
+help:
+	@echo Targets:
+	@echo   make constitution   Build constitution PDF ($(CONST_PDF))
+	@echo   make bylaws         Build bylaws PDF ($(BYLAW_PDF))
+	@echo   make all            Build constitution + bylaws
+	@echo   make open           Build and open the constitution PDF
+	@echo   make open-bylaws    Build and open the bylaws PDF
+	@echo   make watch          Rebuild on file changes (Ctrl+C to stop)
+	@echo   make clean          Remove build output
+
+all: constitution bylaws
+
+constitution: $(CONST_PDF)
+bylaws: $(BYLAW_PDF)
+
+$(CONST_PDF): $(CONST_TEX)
+	@if not exist $(OUTDIR) mkdir $(OUTDIR)
+	$(TEX) -X compile $(CONST_TEX) --outdir $(OUTDIR)
+
+$(BYLAW_PDF): $(BYLAW_TEX)
+	@if not exist $(OUTDIR) mkdir $(OUTDIR)
+	$(TEX) -X compile $(BYLAW_TEX) --outdir $(OUTDIR)
+
+open: constitution
+	start "" "$(subst /,\,$(CONST_PDF))"
+
+open-bylaws: bylaws
+	start "" "$(subst /,\,$(BYLAW_PDF))"
+
+watch:
+	@echo Watching .tex files for changes...
+	@powershell -NoProfile -Command "while ($$true) { & '$(MAKE)' -s all; Start-Sleep -Seconds 1 }"
+
+clean:
+	@if exist $(OUTDIR)\*.pdf del /q $(OUTDIR)\*.pdf

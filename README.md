@@ -19,6 +19,9 @@ cp Makefile.linux Makefile
 
 # macOS (uses tectonic)
 cp Makefile.mac Makefile
+
+# Windows (uses tectonic; in cmd/PowerShell: copy Makefile.windows Makefile)
+cp Makefile.windows Makefile
 ```
 
 Then build:
@@ -41,14 +44,19 @@ make watch-bylaws   # rebuild bylaws on change
 ```
 
 On Linux this uses `latexmk -pvc`. On macOS it uses `fswatch`
-(`brew install fswatch`).
+(`brew install fswatch`). On Windows `make watch` re-runs `make all` every second
+via PowerShell (there is no separate `watch-bylaws`).
 
 ## Toolchain
 
-- **Linux:** [`latexmk`](https://m%67.ctan.org/pkg/latexmk) plus a TeX distribution
+- **Linux:** [`latexmk`](https://ctan.org/pkg/latexmk) plus a TeX distribution
   (e.g. TeX Live: `sudo apt install texlive-full` or a smaller subset).
 - **macOS:** [Tectonic](https://tectonic-typesetting.github.io/)
   (`brew install tectonic`) — self-contained, downloads packages on demand.
+- **Windows:** Tectonic (`winget install TectonicProject.Tectonic` or
+  `scoop install tectonic`) plus a native GNU make (`winget install ezwinports.make`,
+  `scoop install make`, or `mingw32-make`). The Makefile runs its recipes in
+  `cmd.exe`, so it works from cmd, PowerShell, or Git Bash.
 
 Either toolchain works on either OS; the split just reflects the most common setup
 for each. CI builds with Tectonic.
